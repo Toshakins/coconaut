@@ -13,6 +13,8 @@
 
 #import "RootViewController.h"
 
+#define COCOS2D_DEBUG 1
+
 @implementation AppController
 
 @synthesize window;

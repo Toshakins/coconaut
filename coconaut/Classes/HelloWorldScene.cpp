@@ -1,8 +1,46 @@
 #include "HelloWorldScene.h"
 #include "SimpleAudioEngine.h"
+#include "standard.h"
 
 using namespace cocos2d;
 using namespace CocosDenshion;
+
+bool HelloWorld::ccTouchBegan(CCTouch *pTouch, CCEvent *pEvent) {
+    touchBegan = CCDirector::sharedDirector()->convertToGL(pTouch->getLocationInView());
+    return true;
+}
+
+void HelloWorld::ccTouchEnded(CCTouch *pTouch, CCEvent *pEvent) {
+    touchEnded = CCDirector::sharedDirector()->convertToGL(pTouch->getLocationInView());
+    CCLOG("Start: %f %f\nEnd: %f %f", touchBegan.x, touchBegan.y, touchEnded.x, touchEnded.y);
+    int deltaX = abs(touchBegan.x - touchEnded.x);
+    int deltaY = abs(touchBegan.y - touchEnded.y);
+    //alternatively, it could be implemented via vector algebra
+    if (deltaY < maxDelta && deltaX > maxDelta) {
+        //right
+        if (touchBegan.x < touchEnded.x) {
+            CCLOG("right\n");
+            tileManager->moveTile(Right);
+        }
+        //left
+        if (touchBegan.x > touchEnded.x){
+            CCLOG("left\n");
+            tileManager->moveTile(Left);
+        }
+    }
+    if(deltaX < maxDelta && deltaY > maxDelta) {
+        //up
+        if (touchBegan.y < touchEnded.y) {
+            CCLOG("up\n");
+            tileManager->moveTile(Up);
+        }
+        //down
+        if (touchBegan.y > touchEnded.y) {
+            CCLOG("down\n");
+            tileManager->moveTile(Down);
+        }
+    }
+}
 
 CCScene* HelloWorld::scene()
 {
@@ -22,54 +60,24 @@ CCScene* HelloWorld::scene()
 // on "init" you need to initialize your instance
 bool HelloWorld::init()
 {
-    //////////////////////////////
-    // 1. super init first
     if ( !CCLayer::init() )
     {
         return false;
     }
-
-    /////////////////////////////
-    // 2. add a menu item with "X" image, which is clicked to quit the program
-    //    you may modify it.
-
-    // add a "close" icon to exit the progress. it's an autorelease object
-    CCMenuItemImage *pCloseItem = CCMenuItemImage::create(
-                                        "CloseNormal.png",
-                                        "CloseSelected.png",
-                                        this,
-                                        menu_selector(HelloWorld::menuCloseCallback) );
-    pCloseItem->setPosition( ccp(CCDirector::sharedDirector()->getWinSize().width - 20, 20) );
-
-    // create menu, it's an autorelease object
-    CCMenu* pMenu = CCMenu::create(pCloseItem, NULL);
-    pMenu->setPosition( CCPointZero );
-    this->addChild(pMenu, 1);
-
-    /////////////////////////////
-    // 3. add your codes below...
-
-    // add a label shows "Hello World"
-    // create and initialize a label
-    CCLabelTTF* pLabel = CCLabelTTF::create("Hello World", "Thonburi", 34);
-
-    // ask director the window size
-    CCSize size = CCDirector::sharedDirector()->getWinSize();
-
-    // position the label on the center of the screen
-    pLabel->setPosition( ccp(size.width / 2, size.height - 20) );
-
-    // add the label as a child to this layer
-    this->addChild(pLabel, 1);
-
-    // add "HelloWorld" splash screen"
-    CCSprite* pSprite = CCSprite::create("HelloWorld.png");
-
-    // position the sprite on the center of the screen
-    pSprite->setPosition( ccp(size.width/2, size.height/2) );
-
-    // add the sprite as a child to this layer
-    this->addChild(pSprite, 0);
+    
+    //TODO: rewrite as CCLayer
+    contentLayer = CCLayerColor::create(ccc4(0, 0, 0, 255), size * rows, size * rows);
+    CCSize center = CCDirector::sharedDirector()->getWinSize();
+    //setAnchorPoint doesn't work
+    contentLayer->setPosition(ccp(center.width / 2 - size * 2, center.height / 2 - size * 2));
+    tileManager = new TileManager(contentLayer);
+    this->addChild(contentLayer);
+    
+    tileManager->shuffle();
+    
+    //setup touch responders
+    this->setTouchEnabled(true);
+    CCDirector::sharedDirector()->getTouchDispatcher()->addTargetedDelegate(this, 0, true);
     
     return true;
 }

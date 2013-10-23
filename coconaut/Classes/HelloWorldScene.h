@@ -2,6 +2,7 @@
 #define __HELLOWORLD_SCENE_H__
 
 #include "cocos2d.h"
+#include "TileManager.h"
 
 class HelloWorld : public cocos2d::CCLayer
 {
@@ -14,9 +15,16 @@ public:
     
     // a selector callback
     void menuCloseCallback(CCObject* pSender);
-
     // preprocessor macro for "static create()" constructor ( node() deprecated )
     CREATE_FUNC(HelloWorld);
+
+private:
+    cocos2d::CCPoint touchBegan, touchEnded;
+    cocos2d::CCLayerColor *contentLayer;
+    TileManager *tileManager;
+protected:
+    virtual bool ccTouchBegan(cocos2d::CCTouch *pTouch, cocos2d::CCEvent *pEvent);
+    virtual void ccTouchEnded(cocos2d::CCTouch *pTouch, cocos2d::CCEvent *pEvent);
 };
 
 #endif // __HELLOWORLD_SCENE_H__
